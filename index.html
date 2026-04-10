@@ -1,451 +1,60 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SSP LOGIC ENGINE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometric Matrix - SSP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: sans-serif;
-            display: flex;
-            height: 100vh;
-            background: #d4d4d4;
-            color: #222;
-        }
-        #left-pane {
-            flex: 2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-right: 1px solid #bbb;
-            padding: 20px;
-            background: #d4d4d4;
-            position: relative;
-        }
-        #right-pane {
-            flex: 1;
-            padding: 28px 22px;
-            background: #c8c8c8;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            overflow-y: auto;
-        }
-        h1 {
-            font-size: 14px;
-            letter-spacing: 2px;
-            color: #111;
-            margin-bottom: 12px;
-            text-align: center;
-        }
-        canvas {
-            border: 1px solid #999;
-            background: #111;
-            max-width: 100%;
-        }
-        .delta-display {
-            margin-top: 14px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #111;
-            text-align: center;
-            letter-spacing: 1px;
-            min-height: 28px;
-        }
-        .triangle-name {
-            text-align: center;
-            font-size: 14px;
-            font-weight: bold;
-            margin-top: 5px;
-            letter-spacing: 2px;
-            min-height: 20px;
-        }
-        .green  { color: #1a7a1a; }
-        .orange { color: #bb5500; }
-        .blue   { color: #1144bb; }
-        .red    { color: #cc0000; }
-
-        .derived-row {
-            margin-top: 10px;
-            font-size: 11px;
-            color: #555;
-            text-align: center;
-            min-height: 16px;
-            letter-spacing: 0.5px;
-        }
-
-        h2 {
-            font-size: 12px;
-            letter-spacing: 2px;
-            color: #333;
-            margin-bottom: 6px;
-        }
-        label {
-            font-size: 11px;
-            color: #555;
-            margin-top: 8px;
-            display: block;
-        }
-        input {
-            padding: 9px 10px;
-            background: #ebebeb;
-            border: 1px solid #aaa;
-            color: #111;
-            font-size: 15px;
-            border-radius: 3px;
-            width: 100%;
-            -moz-appearance: textfield;
-        }
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button { -webkit-appearance: none; }
-        input:focus { outline: none; border-color: #888; }
-
-        .logic-key {
-            margin-top: 14px;
-            border-top: 1px solid #aaa;
-            padding-top: 12px;
-            font-size: 12px;
-            color: #444;
-            line-height: 2.1;
-        }
-        .logic-key .key-title {
-            font-size: 11px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            color: #333;
-            margin-bottom: 4px;
-        }
-        .cycle-legend {
-            margin-top: 12px;
-            border-top: 1px solid #aaa;
-            padding-top: 10px;
-            font-size: 11px;
-            color: #444;
-            line-height: 2;
-        }
-        .cycle-legend .key-title {
-            font-size: 11px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            color: #333;
-            margin-bottom: 4px;
-        }
-        .swatch {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 2px;
-            margin-right: 4px;
-            vertical-align: middle;
-        }
-        .watermark {
-            position: absolute;
-            bottom: 12px;
-            left: 16px;
-            font-size: 11px;
-            color: #aaa;
-            letter-spacing: 1px;
-        }
+        body { margin: 0; overflow: hidden; background-color: #f8fafc; }
+        .data-cell { min-height: 60px; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        #sspCanvas { background: #ffffff; border: 1px solid #cbd5e1; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
     </style>
 </head>
-<body>
+<body class="font-sans text-slate-900">
 
-<div id="left-pane">
-    <h1>SSP LOGIC ENGINE</h1>
-    <canvas id="sspCanvas" width="520" height="480"></canvas>
-    <div class="delta-display">
-        &Delta; = <span id="deltaVal"></span>
-    </div>
-    <div class="triangle-name" id="typeName"></div>
-    <div class="derived-row" id="derivedRow"></div>
-    <div class="watermark">SemanticShift.net</div>
-</div>
+    <div class="flex h-screen w-full overflow-hidden">
+        
+        <!-- LEFT PANEL: LOGIC KEY -->
+        <div class="w-80 bg-white border-r border-slate-200 flex flex-col shadow-xl z-10">
+            
+            <!-- Header -->
+            <div class="p-6 border-b border-slate-100">
+                <h1 class="text-xl font-bold tracking-tighter text-slate-800 uppercase">
+                    Geometric Matrix
+                </h1>
+                <p class="text-xs text-slate-400 uppercase tracking-widest mt-1">
+                    Symmetric Span Protocol
+                </p>
+            </div>
 
-<div id="right-pane">
-    <h2>VARIABLES</h2>
+            <!-- SSP SYMMETRY MATRIX INPUTS -->
+            <div class="p-6 space-y-6">
+                <div class="space-y-3">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Symmetry Matrix</p>
+                    
+                    <div class="flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded-md">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">Anchor (a)</label>
+                        <input type="number" id="in-a" step="any" class="w-24 text-right bg-transparent font-mono font-bold outline-none text-slate-700" placeholder="0">
+                    </div>
+                    <div class="flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded-md">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">Centroid (b)</label>
+                        <input type="number" id="in-b" step="any" class="w-24 text-right bg-transparent font-mono font-bold outline-none text-slate-700" placeholder="0">
+                    </div>
+                    <div class="flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded-md">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">Span (c)</label>
+                        <input type="number" id="in-c" step="any" class="w-24 text-right bg-transparent font-mono font-bold outline-none text-slate-700" placeholder="0">
+                    </div>
+                    <div class="flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded-md">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">Boundary (d)</label>
+                        <input type="number" id="in-d" step="any" class="w-24 text-right bg-transparent font-mono font-bold outline-none text-slate-700" placeholder="0">
+                    </div>
+                </div>
 
-    <label>a = Anchor</label>
-    <input type="number" id="input_a" step="1" min="1" placeholder="a">
-
-    <label>b = Centroid</label>
-    <input type="number" id="input_b" step="1" min="1" placeholder="b">
-
-    <label>c = Span</label>
-    <input type="number" id="input_c" step="1" min="1" placeholder="c">
-
-    <label>d = Boundary</label>
-    <input type="number" id="input_d" step="1" min="1" placeholder="d">
-
-    <div class="logic-key">
-        <div class="key-title">Logic Key</div>
-        a &lt; d<br>
-        a = b - (c / 2)<br>
-        b = (a + d) / 2<br>
-        c = d - a<br>
-        d = b + (c / 2)
-    </div>
-
-    <div class="cycle-legend">
-        <div class="key-title">Cycle</div>
-        <span class="swatch" style="background:#cc2200"></span>Triangle (pinned circle)<br>
-        <span class="swatch" style="background:#1155cc;border-radius:50%"></span>Circle (22/7 rational)<br>
-        <span class="swatch" style="background:#888;border:none"></span>Square (bounding box)<br>
-        <span class="swatch" style="background:#fff;border:1px solid #999"></span>Source Point S
-    </div>
-</div>
-
-<script>
-    const fieldIds = ['input_a', 'input_b', 'input_c', 'input_d'];
-    fieldIds.forEach(id => document.getElementById(id).addEventListener('input', solveAndDraw));
-
-    function fmt(n) {
-        if (n === null || isNaN(n)) return '';
-        if (Number.isInteger(n)) return String(n);
-        const r = parseFloat(n.toFixed(4));
-        return Number.isInteger(r) ? String(r) : r.toString();
-    }
-
-    function setDerived(id, val) {
-        document.getElementById(id).value = fmt(val);
-    }
-
-    function getRaw(id) {
-        const v = parseFloat(document.getElementById(id).value);
-        return isNaN(v) ? null : v;
-    }
-
-    function showError() {
-        document.getElementById('deltaVal').innerHTML = '<span class="red">ERROR</span>';
-        document.getElementById('typeName').innerText = '';
-        document.getElementById('derivedRow').innerText = '';
-        const ctx = document.getElementById('sspCanvas').getContext('2d');
-        ctx.clearRect(0, 0, 520, 480);
-    }
-
-    function clearDisplay() {
-        document.getElementById('deltaVal').innerText = '';
-        document.getElementById('typeName').innerText = '';
-        document.getElementById('derivedRow').innerText = '';
-        const ctx = document.getElementById('sspCanvas').getContext('2d');
-        ctx.clearRect(0, 0, 520, 480);
-    }
-
-    function isValid(a, b, c, d) {
-        return a > 0 && b > 0 && c > 0 && d > 0 && a < d;
-    }
-
-    function solveAndDraw() {
-        let a = getRaw('input_a');
-        let b = getRaw('input_b');
-        let c = getRaw('input_c');
-        let d = getRaw('input_d');
-
-        const filled = [a,b,c,d].filter(v => v !== null).length;
-        if (filled < 2) { clearDisplay(); return; }
-
-        if (a !== null && d !== null) {
-            b = (a + d) / 2; c = d - a;
-            setDerived('input_b', b); setDerived('input_c', c);
-        } else if (b !== null && c !== null) {
-            a = b - c/2; d = b + c/2;
-            setDerived('input_a', a); setDerived('input_d', d);
-        } else if (a !== null && b !== null) {
-            d = 2*b - a; c = d - a;
-            setDerived('input_d', d); setDerived('input_c', c);
-        } else if (a !== null && c !== null) {
-            d = a + c; b = (a + d)/2;
-            setDerived('input_d', d); setDerived('input_b', b);
-        } else if (c !== null && d !== null) {
-            a = d - c; b = (a + d)/2;
-            setDerived('input_a', a); setDerived('input_b', b);
-        } else if (b !== null && d !== null) {
-            a = 2*b - d; c = d - a;
-            setDerived('input_a', a); setDerived('input_c', c);
-        } else { clearDisplay(); return; }
-
-        if (!isValid(a, b, c, d)) { showError(); return; }
-
-        const delta = b*b + c*c - d*d;
-        const isLocked = Math.abs(delta) < 0.001;
-        const isObtuse = delta < -0.001;
-
-        // --- Circumcenter and radius ---
-        const xPeak = (b*b + c*c - d*d) / (2*c);
-        const yPeakSq = b*b - xPeak*xPeak;
-        if (yPeakSq < 0) { showError(); return; }
-        const yPeak = Math.sqrt(yPeakSq);
-        const yc = yPeak > 0 ? (b*b - xPeak*c) / (2*yPeak) : 0;
-        const R = Math.sqrt((c/2)*(c/2) + yc*yc);
-        const circ = (22/7) * 2 * R;
-        const squareSide = 2 * R;
-
-        // Update display
-        const deltaEl = document.getElementById('deltaVal');
-        const typeEl = document.getElementById('typeName');
-        const derivedEl = document.getElementById('derivedRow');
-
-        deltaEl.innerText = fmt(delta);
-        typeEl.className = 'triangle-name';
-
-        if (isLocked) {
-            typeEl.innerText = 'RECTANGULO';
-            typeEl.classList.add('green');
-        } else if (isObtuse) {
-            typeEl.innerText = 'OBTUSANGULO';
-            typeEl.classList.add('orange');
-        } else {
-            typeEl.innerText = 'ACUTANGULO';
-            typeEl.classList.add('blue');
-        }
-
-        derivedEl.innerText = `R = ${fmt(R)}   C = (22/7)·2R = ${fmt(circ)}   D = ${fmt(squareSide)}`;
-
-        drawFull(b, c, d, delta, isLocked, isObtuse, xPeak, yPeak, yc, R);
-    }
-
-    function drawFull(b, c, d, delta, isLocked, isObtuse, xPeak, yPeak, yc, R) {
-        const canvas = document.getElementById('sspCanvas');
-        const ctx = canvas.getContext('2d');
-        const W = canvas.width;
-        const H = canvas.height;
-        ctx.clearRect(0, 0, W, H);
-
-        const triColor = isLocked ? '#1a7a1a' : isObtuse ? '#bb5500' : '#1144bb';
-
-        // Scale: fit square (2R x 2R) in canvas with margin
-        const margin = 55;
-        const available = Math.min(W, H) - margin * 2;
-        const scale = available / (2 * R);
-
-        // Center of canvas = circumcenter S
-        const cx = W / 2;
-        const cy = H / 2 + R * scale * 0.1; // slight offset down for labels
-
-        function sx(x) { return cx + x * scale; }
-        function sy(y) { return cy - y * scale; }
-
-        // --- 1. BOUNDING SQUARE (gray dashed) ---
-        ctx.strokeStyle = '#777';
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([5, 4]);
-        ctx.strokeRect(sx(-R), sy(R), 2*R*scale, 2*R*scale);
-        ctx.setLineDash([]);
-
-        // Square label
-        ctx.fillStyle = '#888';
-        ctx.font = '10px sans-serif';
-        ctx.fillText(`D = ${fmt(2*R)}`, sx(-R) + 3, sy(R) + 13);
-
-        // --- 2. CIRCLE (blue) ---
-        ctx.beginPath();
-        ctx.arc(cx, cy, R * scale, 0, 2 * Math.PI);
-        ctx.strokeStyle = '#1155cc';
-        ctx.lineWidth = 1.8;
-        ctx.stroke();
-
-        // Circle label
-        ctx.fillStyle = '#1155cc';
-        ctx.font = '10px sans-serif';
-        const circLabel = `C = (22/7)·${fmt(2*R)} = ${fmt((22/7)*2*R)}`;
-        ctx.fillText(circLabel, cx - ctx.measureText(circLabel).width/2, sy(-R) + 14);
-
-        // --- 3. TRIANGLE (vertices relative to circumcenter S at origin) ---
-        // Circumcenter at origin, vertices:
-        const v1x = -c/2;     const v1y = -yc;
-        const v2x = c/2;      const v2y = -yc;
-        const v3x = xPeak - c/2; const v3y = yPeak - yc;
-
-        // Fill
-        ctx.beginPath();
-        ctx.moveTo(sx(v1x), sy(v1y));
-        ctx.lineTo(sx(v2x), sy(v2y));
-        ctx.lineTo(sx(v3x), sy(v3y));
-        ctx.closePath();
-        ctx.fillStyle = triColor + '30';
-        ctx.fill();
-
-        // Stroke
-        ctx.beginPath();
-        ctx.moveTo(sx(v1x), sy(v1y));
-        ctx.lineTo(sx(v2x), sy(v2y));
-        ctx.lineTo(sx(v3x), sy(v3y));
-        ctx.closePath();
-        ctx.strokeStyle = triColor;
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-
-        // Radius lines (faint dotted)
-        ctx.setLineDash([3, 4]);
-        ctx.strokeStyle = '#555';
-        ctx.lineWidth = 1;
-        [[v1x,v1y],[v2x,v2y],[v3x,v3y]].forEach(([vx,vy]) => {
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(sx(vx), sy(vy));
-            ctx.stroke();
-        });
-        ctx.setLineDash([]);
-
-        // Right angle marker (for locked triangle, at base left vertex)
-        if (isLocked) {
-            const sz = 10;
-            // Find direction from v1 to v2 (base direction)
-            const baseDir = [v2x - v1x, v2y - v1y];
-            const basLen = Math.sqrt(baseDir[0]**2 + baseDir[1]**2);
-            const ub = [baseDir[0]/basLen, baseDir[1]/basLen];
-            // Perpendicular (upward)
-            const up = [-ub[1], ub[0]];
-            const bx = sx(v1x), by = sy(v1y);
-            const p1 = [bx + ub[0]*sz, by - ub[1]*sz];
-            const p2 = [bx + ub[0]*sz + up[0]*sz, by - ub[1]*sz - up[1]*sz];
-            const p3 = [bx + up[0]*sz, by - up[1]*sz];
-            ctx.beginPath();
-            ctx.moveTo(p1[0], p1[1]);
-            ctx.lineTo(p2[0], p2[1]);
-            ctx.lineTo(p3[0], p3[1]);
-            ctx.strokeStyle = '#1a7a1a';
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-        }
-
-        // --- 4. SOURCE POINT S (circumcenter at canvas center) ---
-        ctx.beginPath();
-        ctx.arc(cx, cy, 5, 0, 2*Math.PI);
-        ctx.fillStyle = '#ffffff';
-        ctx.fill();
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-        ctx.fillStyle = '#ccc';
-        ctx.font = '10px sans-serif';
-        ctx.fillText('S', cx + 7, cy - 6);
-
-        // --- 5. VERTEX LABELS ---
-        ctx.fillStyle = triColor;
-        ctx.font = 'bold 10px sans-serif';
-        ctx.fillText('a', sx(v1x) - 16, sy(v1y) + 4);
-        ctx.fillText('d', sx(v2x) + 6, sy(v2y) + 4);
-        ctx.fillText('peak', sx(v3x) - 10, sy(v3y) - 8);
-
-        // Side labels
-        ctx.font = '10px sans-serif';
-        ctx.fillText(`c=${fmt(c)}`, sx((v1x+v2x)/2) - 14, sy((v1y+v2y)/2) + 14);
-        ctx.fillText(`b=${fmt(b)}`, sx((v1x+v3x)/2) - 28, sy((v1y+v3y)/2));
-        ctx.fillText(`d=${fmt(d)}`, sx((v2x+v3x)/2) + 4, sy((v2y+v3y)/2));
-
-        // --- 6. MATRIX INFO (top left) ---
-        const a_val = b - c/2;
-        ctx.fillStyle = 'rgba(30,30,30,0.75)';
-        ctx.fillRect(8, 8, 148, 72);
-        ctx.fillStyle = '#ddd';
-        ctx.font = '10px monospace';
-        ctx.fillText(`a=${fmt(a_val)}  d=${fmt(d)}`, 14, 24);
-        ctx.fillText(`b=${fmt(b)}  c=${fmt(c)}`, 14, 38);
-        ctx.fillText(`R = ${fmt(R)}`, 14, 52);
-        ctx.fillText(`\u0394 = ${fmt(delta)}`, 14, 66);
-    }
-</script>
-
-</body>
-</html>
+                <!-- DERIVED STRUCTURAL DATA -->
+                <div class="space-y-2 pt-4">
+                    <div class="p-3 bg-slate-50 border border-slate-100 rounded-md data-cell flex flex-col justify-center">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Structural Drift (Δ)</span>
+                        <div class="flex items-baseline gap-2">
+                            <span id="out-delta" class="text-sm font-mono font-semibold text-slate-700">---<
