@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometric Matrix - SSP</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React and Babel for the logic to run in the browser -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        .data-cell { min-height: 56px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo } = React;
+
+        const GeometricMatrix = () => {
+            const [a, setA] = useState('1');
+            const [d, setD] = useState('5');
+
+            // --- SSP CORE LOGIC ---
+            const results = useMemo(() => {
+                const a_val = parseFloat(a);
+                const d_val = parseFloat(d);
+
+                if (isNaN(a_val) || isNaN(d_val) || a_val >= d_val) {
+                    return { error: "Invalid Anchor Boundary (d must be > a)" };
+                }
+
+                // 1. Symmetry Matrix
+                const b = (a_val + d_val) / 2;
+                const c = d_val - a_val;
+
+                // 2. Peak Coordinates (relative to base midpoint)
+                const x_peak = (b**2 + c**2 - d_val**2) / (2 * c);
+                const y_peak = Math.sqrt(Math.max(0, b**2 - x_peak**2));
+
+                // 3. Rational Partitioning for Circumcenter (S)
+                const yc = (b**2 - (x_peak * c)) / (2 * y_peak);
+                const radius = Math.sqrt((c/2)**2 + yc**2);
+
+                // 4. Normalization for Viewport (S = 0,0)
+                const v1 = { x: -c/2, y: -yc };
+                const v2 = { x: c/2, y: -yc };
+                const v3 = { x: x_peak - c/2, y: y_peak - yc };
+
+                // 5. Structural Drift (Delta)
+                const delta = (5 * a_val - d_val) * (a_val - d_val) / 4;
+                let driftLabel = "Right (Rectangulo)";
+                if (d_val < 5 * a_val) driftLabel = "Obtuse (Obtusangulo)";
+                else if (d_val > 5 * a_val) driftLabel = "Acute (Acutangulo)";
+
+                return {
+                    a: a_val, d: d_val, b, c,
+                    delta, driftLabel,
+                    radius,
+                    circumference: (22/7) * (2 * radius),
+                    vertices: [v1, v2, v3],
+                    squareSide: 2 * radius,
+                    error: null
+                };
+            }, [a, d]);
+
+            return (
+                <div className="flex h-screen w-full bg-slate-50 font-sans text-slate-900 overflow-hidden">
+                    
+                    {/* LEFT PANEL: LOGIC KEY */}
+                    <div className="w-80 bg-white border-r border-slate-200 flex flex-col shadow-xl z-10">
+                        
+                        {/* Header */}
+                        <div className="p-6 border-b border-slate-100">
+                            <h1 className="text-xl font-bold tracking-tighter text-slate-800 uppercase">
+                                Geometric Matrix
+                            </h1>
+                            <p className="text-xs text-slate-400 uppercase tracking-widest mt-1">
+                                Symmetric Span Protocol
+                            </p>
+                        </div>
+
+                        {/* Inputs Section */}
+                        <div className="p-6 space-y-6">
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Left Anchor (a)</label>
+                                    <input 
+                                        type="number" 
+                                        value={a} 
+                                        onChange={(e) => setA(e.target.value)}
+                                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Right Boundary (d)</label>
+                                    <input 
+                                        type="number" 
+                                        value={d} 
+                                        onChange={(e) => setD(e.target.value)}
+                                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Variables Display - Fixed Height Cells */}
+                            <div className="space-y-2 pt-4">
+                                <div className="grid grid-cols-2 gap-2">
+                                    <DataCell label="Centroid (b)" value={results?.b} />
+                                    <DataCell label="Span (c)" value={results?.c} />
+                                </div>
+                                <DataCell label="Structural Drift (Δ)" value={results?.delta} subVa
