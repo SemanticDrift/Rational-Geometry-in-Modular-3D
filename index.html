@@ -57,4 +57,202 @@
                     <div class="p-3 bg-slate-50 border border-slate-100 rounded-md data-cell flex flex-col justify-center">
                         <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Structural Drift (Δ)</span>
                         <div class="flex items-baseline gap-2">
-                            <span id="out-delta" class="text-sm font-mono font-semibold text-slate-700">---<
+                            <span id="out-delta" class="text-sm font-mono font-semibold text-slate-700">---</span>
+                            <span id="out-label" class="text-[10px] text-blue-500 font-medium"></span>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-slate-50 border border-slate-100 rounded-md data-cell flex flex-col justify-center">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Radius (R)</span>
+                        <span id="out-r" class="text-sm font-mono font-semibold text-slate-700">---</span>
+                    </div>
+                    <div class="p-3 bg-slate-50 border border-slate-100 rounded-md data-cell flex flex-col justify-center">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Circumference (C)</span>
+                        <span id="out-c_total" class="text-sm font-mono font-semibold text-slate-700">---</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Area -->
+            <div id="error-box" class="hidden mt-auto p-6">
+                <div class="flex items-start gap-2 p-3 bg-red-50 border border-red-100 text-red-600 rounded-md text-xs">
+                    <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span id="error-text">Invalid Boundary</span>
+                </div>
+            </div>
+
+            <!-- Watermark -->
+            <div class="p-4 text-[10px] text-slate-300 font-medium tracking-widest uppercase text-center border-t border-slate-50">
+                © 2026 Carolina Johnson (CJ)
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: VISUALIZATION WINDOW -->
+        <div class="flex-1 relative bg-slate-100 flex items-center justify-center p-12">
+            <div id="canvas-container" class="relative p-4">
+                <canvas id="sspCanvas" width="600" height="600"></canvas>
+            </div>
+            <div id="empty-state" class="hidden flex flex-col items-center justify-center text-slate-400 space-y-2">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <p class="text-sm font-light">Enter at least two variables to initialize matrix</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const inputs = {
+            a: document.getElementById('in-a'),
+            b: document.getElementById('in-b'),
+            c: document.getElementById('in-c'),
+            d: document.getElementById('in-d')
+        };
+        
+        const outputs = {
+            delta: document.getElementById('out-delta'),
+            label: document.getElementById('out-label'),
+            r: document.getElementById('out-r'),
+            ctotal: document.getElementById('out-c_total')
+        };
+
+        const errorBox = document.getElementById('error-box');
+        const canvasContainer = document.getElementById('canvas-container');
+        const emptyState = document.getElementById('empty-state');
+        const canvas = document.getElementById('sspCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function fmt(n) {
+            if (n === null || isNaN(n)) return '---';
+            return parseFloat(n.toFixed(3)).toString();
+        }
+
+        function solveMatrix() {
+            let a = parseFloat(inputs.a.value);
+            let b = parseFloat(inputs.b.value);
+            let c = parseFloat(inputs.c.value);
+            let d = parseFloat(inputs.d.value);
+
+            const provided = [];
+            if (!isNaN(a)) provided.push('a');
+            if (!isNaN(b)) provided.push('b');
+            if (!isNaN(c)) provided.push('c');
+            if (!isNaN(d)) provided.push('d');
+
+            if (provided.length < 2) {
+                canvasContainer.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            // Tautological Solving (The Engine)
+            if (!isNaN(a) && !isNaN(d)) {
+                b = (a + d) / 2; c = d - a;
+            } else if (!isNaN(b) && !isNaN(c)) {
+                a = b - (c / 2); d = b + (c / 2);
+            } else if (!isNaN(a) && !isNaN(b)) {
+                d = 2 * b - a; c = d - a;
+            } else if (!isNaN(a) && !isNaN(c)) {
+                d = a + c; b = (a + d) / 2;
+            } else if (!isNaN(c) && !isNaN(d)) {
+                a = d - c; b = (a + d) / 2;
+            } else if (!isNaN(b) && !isNaN(d)) {
+                a = 2 * b - d; c = d - a;
+            }
+
+            // Sync derived values back to inputs
+            inputs.a.value = fmt(a);
+            inputs.b.value = fmt(b);
+            inputs.c.value = fmt(c);
+            inputs.d.value = fmt(d);
+
+            if (a >= d) {
+                errorBox.classList.remove('hidden');
+                canvasContainer.classList.add('hidden');
+                emptyState.classList.add('hidden');
+                return;
+            }
+
+            errorBox.classList.add('hidden');
+            canvasContainer.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+
+            // Geometrical Computations
+            const delta = (5 * a - d) * (a - d) / 4;
+            let label = "Right (Rectangulo)";
+            if (d < 5 * a) label = "Obtuse (Obtusangulo)";
+            else if (d > 5 * a) label = "Acute (Acutangulo)";
+
+            const xPeak = (b**2 + c**2 - d**2) / (2 * c);
+            const yPeak = Math.sqrt(Math.max(0, b**2 - xPeak**2));
+            const yc = (b**2 - (xPeak * c)) / (2 * yPeak);
+            const radius = Math.sqrt((c/2)**2 + yc**2);
+            const circumference = (22/7) * (2 * radius);
+
+            outputs.delta.innerText = fmt(delta);
+            outputs.label.innerText = label;
+            outputs.r.innerText = fmt(radius);
+            outputs.ctotal.innerText = fmt(circumference);
+
+            draw(b, c, d, radius, xPeak, yPeak, yc, label);
+        }
+
+        function draw(b, c, d, R, xPeak, yPeak, yc, label) {
+            const W = canvas.width;
+            const H = canvas.height;
+            ctx.clearRect(0, 0, W, H);
+
+            const scale = Math.min(W, H) * 0.4 / R;
+            const cx = W / 2;
+            const cy = H / 2;
+
+            function sx(x) { return cx + x * scale; }
+            function sy(y) { return cy - y * scale; }
+
+            // Bounding Square
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(sx(-R), sy(R), 2*R*scale, 2*R*scale);
+
+            // Circle
+            ctx.beginPath();
+            ctx.arc(cx, cy, R * scale, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#3b82f6';
+            ctx.stroke();
+
+            // Triangle
+            const v1x = -c/2, v1y = -yc;
+            const v2x = c/2, v2y = -yc;
+            const v3x = xPeak - c/2, v3y = yPeak - yc;
+
+            ctx.beginPath();
+            ctx.moveTo(sx(v1x), sy(v1y));
+            ctx.lineTo(sx(v2x), sy(v2y));
+            ctx.lineTo(sx(v3x), sy(v3y));
+            ctx.closePath();
+            
+            let triColor = '#ef4444';
+            if (label.includes("Right")) triColor = '#1a7a1a';
+            if (label.includes("Obtuse")) triColor = '#bb5500';
+
+            ctx.fillStyle = triColor + '20';
+            ctx.fill();
+            ctx.strokeStyle = triColor;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Source Point
+            ctx.beginPath();
+            ctx.arc(cx, cy, 4, 0, 2 * Math.PI);
+            ctx.fillStyle = '#1e293b';
+            ctx.fill();
+            ctx.fillStyle = '#64748b';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.fillText('S', cx + 8, cy - 8);
+        }
+
+        Object.values(inputs).forEach(input => {
+            input.addEventListener('input', solveMatrix);
+        });
+
+        solveMatrix();
+    </script>
+</body>
+</html>
