@@ -1,7 +1,7 @@
 # Geometric Matrix
 ### Structural Foundations for Rational Geometry in Modular 3D
 **Author:** Carolina Johnson (CJ)  
-**Date:** March 2026  
+**Date:** April 2026  
 **License:** CC BY 4.0, Attribution required  
 **DOI:** https://doi.org/10.5281/zenodo.19490969  
 **ORCID:** https://orcid.org/0009-0002-8819-3347
