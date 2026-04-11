@@ -51,8 +51,11 @@ The fundamental state of the Geometric Matrix is determined by the Delta (Δ). T
 Δ = b² + c² - d²
 ```
 
-By utilizing this math, the shape maintains zero-drift precision across the entire 3D field.
+At Δ = 0, the triangle is right (equilibrium).
+At Δ > 0, the triangle is acute.
+At Δ < 0, the triangle is obtuse.
 
+The Delta constant classifies without approximation. No trigonometry. No Heron. Just the matrix.
 ---
 
 ## Repository Contents
