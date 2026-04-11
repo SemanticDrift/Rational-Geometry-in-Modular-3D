@@ -5,13 +5,16 @@
     <title>SYMMETRIC GEOMETRIC MATRIX</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
             font-family: sans-serif;
             display: flex;
             height: 100vh;
             background: #d4d4d4;
             color: #222;
+            overflow: hidden;
         }
+
         #left-pane {
             flex: 2;
             display: flex;
@@ -19,44 +22,44 @@
             align-items: center;
             justify-content: center;
             border-right: 1px solid #bbb;
-            padding: 20px;
+            padding: 12px 20px;
             background: #d4d4d4;
             position: relative;
-            min-height: 100vh;
-            overflow-y: auto;
+            min-width: 0;
         }
-        #right-pane {
-            flex: 1;
-            padding: 28px 22px;
-            background: #c8c8c8;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            overflow-y: auto;
-        }
-        h1 {
-            font-size: 13px;
-            letter-spacing: 2px;
-            color: #111;
-            margin-bottom: 12px;
-            text-align: center;
-        }
+
+        /* Canvas scales down so Delta row is always visible */
         canvas {
             border: 1px solid #999;
             background: #111;
             max-width: 100%;
+            /* reserve 130px for title + delta + name + derived row */
+            max-height: calc(100vh - 130px);
+            display: block;
         }
-        /* All display rows locked height — no jumping ever */
+
+        h1 {
+            font-size: 13px;
+            letter-spacing: 2px;
+            color: #111;
+            margin-bottom: 10px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        /* All three result rows: locked height, never collapse or expand */
         .delta-display {
-            margin-top: 12px;
+            margin-top: 10px;
             font-size: 20px;
             font-weight: bold;
             color: #111;
             text-align: center;
             letter-spacing: 1px;
-            height: 28px;
-            line-height: 28px;
+            height: 26px;
+            line-height: 26px;
             overflow: hidden;
+            flex-shrink: 0;
+            width: 100%;
         }
         .triangle-name {
             text-align: center;
@@ -67,9 +70,11 @@
             height: 20px;
             line-height: 20px;
             overflow: hidden;
+            flex-shrink: 0;
+            width: 100%;
         }
         .derived-row {
-            margin-top: 6px;
+            margin-top: 5px;
             font-size: 11px;
             color: #555;
             text-align: center;
@@ -77,11 +82,35 @@
             line-height: 16px;
             overflow: hidden;
             white-space: nowrap;
+            flex-shrink: 0;
+            width: 100%;
         }
+
         .green  { color: #1a7a1a; }
         .orange { color: #bb5500; }
         .blue   { color: #1144bb; }
         .red    { color: #cc0000; }
+
+        .watermark {
+            position: absolute;
+            bottom: 10px;
+            left: 14px;
+            font-size: 11px;
+            color: #aaa;
+            letter-spacing: 1px;
+        }
+
+        /* Right pane */
+        #right-pane {
+            flex: 1;
+            padding: 28px 22px;
+            background: #c8c8c8;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            min-width: 200px;
+        }
         h2 {
             font-size: 12px;
             letter-spacing: 2px;
@@ -107,6 +136,7 @@
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button { -webkit-appearance: none; }
         input:focus { outline: none; border-color: #888; }
+
         .logic-key {
             margin-top: 14px;
             border-top: 1px solid #aaa;
@@ -121,14 +151,6 @@
             letter-spacing: 1px;
             color: #333;
             margin-bottom: 4px;
-        }
-        .watermark {
-            position: absolute;
-            bottom: 12px;
-            left: 16px;
-            font-size: 11px;
-            color: #aaa;
-            letter-spacing: 1px;
         }
     </style>
 </head>
@@ -161,16 +183,16 @@
     <div class="logic-key">
         <div class="key-title">Logic Key</div>
         a &lt; d<br>
-        a = b - (c / 2)<br>
+        a = b &minus; (c / 2)<br>
         b = (a + d) / 2<br>
-        c = d - a<br>
+        c = d &minus; a<br>
         d = b + (c / 2)<br>
         &Delta; = b&sup2; + c&sup2; &minus; d&sup2;
     </div>
 </div>
 
 <script>
-    const fieldIds = ['input_a', 'input_b', 'input_c', 'input_d'];
+    const fieldIds = ['input_a','input_b','input_c','input_d'];
     fieldIds.forEach(id => document.getElementById(id).addEventListener('input', solveAndDraw));
 
     function fmt(n) {
@@ -189,13 +211,6 @@
         return isNaN(v) ? null : v;
     }
 
-    function showError() {
-        document.getElementById('deltaVal').innerHTML = '<span class="red">ERROR</span>';
-        document.getElementById('typeName').innerText = '';
-        document.getElementById('derivedRow').innerText = '';
-        clearCanvas();
-    }
-
     function clearCanvas() {
         const ctx = document.getElementById('sspCanvas').getContext('2d');
         ctx.clearRect(0, 0, 520, 460);
@@ -203,6 +218,13 @@
 
     function clearDisplay() {
         document.getElementById('deltaVal').innerText = '';
+        document.getElementById('typeName').innerText = '';
+        document.getElementById('derivedRow').innerText = '';
+        clearCanvas();
+    }
+
+    function showError() {
+        document.getElementById('deltaVal').innerHTML = '<span class="red">ERROR</span>';
         document.getElementById('typeName').innerText = '';
         document.getElementById('derivedRow').innerText = '';
         clearCanvas();
@@ -221,54 +243,36 @@
         const filled = [a,b,c,d].filter(v => v !== null).length;
         if (filled < 2) { clearDisplay(); return; }
 
-        if (a !== null && d !== null) {
-            b = (a+d)/2; c = d-a;
-            setDerived('input_b', b); setDerived('input_c', c);
-        } else if (b !== null && c !== null) {
-            a = b-c/2; d = b+c/2;
-            setDerived('input_a', a); setDerived('input_d', d);
-        } else if (a !== null && b !== null) {
-            d = 2*b-a; c = d-a;
-            setDerived('input_d', d); setDerived('input_c', c);
-        } else if (a !== null && c !== null) {
-            d = a+c; b = (a+d)/2;
-            setDerived('input_d', d); setDerived('input_b', b);
-        } else if (c !== null && d !== null) {
-            a = d-c; b = (a+d)/2;
-            setDerived('input_a', a); setDerived('input_b', b);
-        } else if (b !== null && d !== null) {
-            a = 2*b-d; c = d-a;
-            setDerived('input_a', a); setDerived('input_c', c);
-        } else { clearDisplay(); return; }
+        if      (a !== null && d !== null) { b=(a+d)/2; c=d-a; setDerived('input_b',b); setDerived('input_c',c); }
+        else if (b !== null && c !== null) { a=b-c/2; d=b+c/2; setDerived('input_a',a); setDerived('input_d',d); }
+        else if (a !== null && b !== null) { d=2*b-a; c=d-a; setDerived('input_d',d); setDerived('input_c',c); }
+        else if (a !== null && c !== null) { d=a+c; b=(a+d)/2; setDerived('input_d',d); setDerived('input_b',b); }
+        else if (c !== null && d !== null) { a=d-c; b=(a+d)/2; setDerived('input_a',a); setDerived('input_b',b); }
+        else if (b !== null && d !== null) { a=2*b-d; c=d-a; setDerived('input_a',a); setDerived('input_c',c); }
+        else { clearDisplay(); return; }
 
-        if (!isValid(a, b, c, d)) { showError(); return; }
+        if (!isValid(a,b,c,d)) { showError(); return; }
 
-        const delta = b*b + c*c - d*d;
-        const isLocked = Math.abs(delta) < 0.001;
-        const isObtuse = delta < -0.001;
+        const delta  = b*b + c*c - d*d;
+        const isLocked  = Math.abs(delta) < 0.001;
+        const isObtuse  = delta < -0.001;
 
-        const xPeak = (b*b + c*c - d*d) / (2*c);
+        const xPeak   = (b*b + c*c - d*d) / (2*c);
         const yPeakSq = b*b - xPeak*xPeak;
         if (yPeakSq < 0) { showError(); return; }
         const yPeak = Math.sqrt(yPeakSq);
-        const Yc = yPeak > 0 ? (b*b - xPeak*c) / (2*yPeak) : 0;
-        const R = Math.sqrt((c/2)*(c/2) + Yc*Yc);
-        const C = (22/7) * 2 * R;
+        const Yc    = yPeak > 0 ? (b*b - xPeak*c) / (2*yPeak) : 0;
+        const R     = Math.sqrt((c/2)*(c/2) + Yc*Yc);
+        const C     = (22/7) * 2 * R;
 
+        // Update result rows
         document.getElementById('deltaVal').innerText = fmt(delta);
 
         const typeEl = document.getElementById('typeName');
         typeEl.className = 'triangle-name';
-        if (isLocked) {
-            typeEl.innerText = 'RECTANGULO';
-            typeEl.classList.add('green');
-        } else if (isObtuse) {
-            typeEl.innerText = 'OBTUSANGULO';
-            typeEl.classList.add('orange');
-        } else {
-            typeEl.innerText = 'ACUTANGULO';
-            typeEl.classList.add('blue');
-        }
+        if (isLocked)       { typeEl.innerText = 'RECTANGULO';  typeEl.classList.add('green'); }
+        else if (isObtuse)  { typeEl.innerText = 'OBTUSANGULO'; typeEl.classList.add('orange'); }
+        else                { typeEl.innerText = 'ACUTANGULO';  typeEl.classList.add('blue'); }
 
         document.getElementById('derivedRow').innerText =
             `R = ${fmt(R)}   C = ${fmt(C)}   D = ${fmt(2*R)}`;
@@ -278,121 +282,93 @@
 
     function drawFull(b, c, d, isLocked, isObtuse, xPeak, yPeak, Yc, R) {
         const canvas = document.getElementById('sspCanvas');
-        const ctx = canvas.getContext('2d');
+        const ctx    = canvas.getContext('2d');
         const W = canvas.width;
         const H = canvas.height;
         ctx.clearRect(0, 0, W, H);
 
         const triColor = isLocked ? '#1a7a1a' : isObtuse ? '#bb5500' : '#1144bb';
+        const margin   = 50;
+        const scale    = (Math.min(W, H) - margin*2) / (2*R);
+        const cx = W/2;
+        const cy = H/2 + R*scale*0.05;
 
-        const margin = 50;
-        const available = Math.min(W, H) - margin * 2;
-        const scale = available / (2 * R);
+        function sx(x) { return cx + x*scale; }
+        function sy(y) { return cy - y*scale; }
 
-        const cx = W / 2;
-        const cy = H / 2 + R * scale * 0.05;
-
-        function sx(x) { return cx + x * scale; }
-        function sy(y) { return cy - y * scale; }
-
-        // Bounding square (dashed grey)
+        // Bounding square
         ctx.strokeStyle = '#777';
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([5, 4]);
+        ctx.lineWidth   = 1.5;
+        ctx.setLineDash([5,4]);
         ctx.strokeRect(sx(-R), sy(R), 2*R*scale, 2*R*scale);
         ctx.setLineDash([]);
         ctx.fillStyle = '#888';
-        ctx.font = '10px sans-serif';
-        ctx.fillText(`D = ${fmt(2*R)}`, sx(-R) + 4, sy(R) + 13);
+        ctx.font      = '10px sans-serif';
+        ctx.fillText(`D = ${fmt(2*R)}`, sx(-R)+4, sy(R)+13);
 
-        // Circle (blue)
+        // Circle
         ctx.beginPath();
-        ctx.arc(cx, cy, R * scale, 0, 2 * Math.PI);
+        ctx.arc(cx, cy, R*scale, 0, 2*Math.PI);
         ctx.strokeStyle = '#1155cc';
-        ctx.lineWidth = 1.8;
+        ctx.lineWidth   = 1.8;
         ctx.stroke();
         ctx.fillStyle = '#1155cc';
-        ctx.font = '10px sans-serif';
-        const cLabel = `C = ${fmt((22/7)*2*R)}`;
-        ctx.fillText(cLabel, cx - ctx.measureText(cLabel).width/2, sy(-R) + 14);
+        ctx.font      = '10px sans-serif';
+        const cLabel  = `C = ${fmt((22/7)*2*R)}`;
+        ctx.fillText(cLabel, cx - ctx.measureText(cLabel).width/2, sy(-R)+14);
 
-        // Triangle vertices relative to circumcenter S at origin
+        // Triangle vertices (circumcenter S at canvas centre)
         const v1x = -c/2;        const v1y = -Yc;
         const v2x =  c/2;        const v2y = -Yc;
-        const v3x = xPeak - c/2; const v3y = yPeak - Yc;
+        const v3x = xPeak-c/2;   const v3y = yPeak-Yc;
 
-        // Triangle fill
         ctx.beginPath();
-        ctx.moveTo(sx(v1x), sy(v1y));
-        ctx.lineTo(sx(v2x), sy(v2y));
-        ctx.lineTo(sx(v3x), sy(v3y));
+        ctx.moveTo(sx(v1x),sy(v1y)); ctx.lineTo(sx(v2x),sy(v2y)); ctx.lineTo(sx(v3x),sy(v3y));
         ctx.closePath();
-        ctx.fillStyle = triColor + '30';
-        ctx.fill();
+        ctx.fillStyle = triColor+'30'; ctx.fill();
 
-        // Triangle stroke
         ctx.beginPath();
-        ctx.moveTo(sx(v1x), sy(v1y));
-        ctx.lineTo(sx(v2x), sy(v2y));
-        ctx.lineTo(sx(v3x), sy(v3y));
+        ctx.moveTo(sx(v1x),sy(v1y)); ctx.lineTo(sx(v2x),sy(v2y)); ctx.lineTo(sx(v3x),sy(v3y));
         ctx.closePath();
-        ctx.strokeStyle = triColor;
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
+        ctx.strokeStyle = triColor; ctx.lineWidth = 2.5; ctx.stroke();
 
-        // Radius lines (faint dotted from S to each vertex)
-        ctx.setLineDash([3, 4]);
-        ctx.strokeStyle = '#555';
-        ctx.lineWidth = 1;
-        [[v1x,v1y],[v2x,v2y],[v3x,v3y]].forEach(([vx,vy]) => {
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(sx(vx), sy(vy));
-            ctx.stroke();
+        // Radius lines
+        ctx.setLineDash([3,4]); ctx.strokeStyle='#555'; ctx.lineWidth=1;
+        [[v1x,v1y],[v2x,v2y],[v3x,v3y]].forEach(([vx,vy])=>{
+            ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(sx(vx),sy(vy)); ctx.stroke();
         });
         ctx.setLineDash([]);
 
-        // Right angle marker for locked triangle at left base vertex
+        // Right angle marker (locked only)
         if (isLocked) {
-            const sz = 10;
-            const baseDir = [v2x-v1x, v2y-v1y];
-            const basLen = Math.sqrt(baseDir[0]**2 + baseDir[1]**2);
-            const ub = [baseDir[0]/basLen, baseDir[1]/basLen];
-            const up = [-ub[1], ub[0]];
-            const bx = sx(v1x), by = sy(v1y);
-            const p1 = [bx + ub[0]*sz, by - ub[1]*sz];
-            const p2 = [bx + ub[0]*sz + up[0]*sz, by - ub[1]*sz - up[1]*sz];
-            const p3 = [bx + up[0]*sz, by - up[1]*sz];
-            ctx.beginPath();
-            ctx.moveTo(p1[0], p1[1]);
-            ctx.lineTo(p2[0], p2[1]);
-            ctx.lineTo(p3[0], p3[1]);
-            ctx.strokeStyle = '#1a7a1a';
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
+            const sz=10;
+            const baseDir=[v2x-v1x,v2y-v1y];
+            const bL=Math.sqrt(baseDir[0]**2+baseDir[1]**2);
+            const ub=[baseDir[0]/bL,baseDir[1]/bL];
+            const up=[-ub[1],ub[0]];
+            const bx=sx(v1x), by=sy(v1y);
+            const p1=[bx+ub[0]*sz, by-ub[1]*sz];
+            const p2=[bx+ub[0]*sz+up[0]*sz, by-ub[1]*sz-up[1]*sz];
+            const p3=[bx+up[0]*sz, by-up[1]*sz];
+            ctx.beginPath(); ctx.moveTo(p1[0],p1[1]); ctx.lineTo(p2[0],p2[1]); ctx.lineTo(p3[0],p3[1]);
+            ctx.strokeStyle='#1a7a1a'; ctx.lineWidth=1.5; ctx.stroke();
         }
 
         // Source point S
-        ctx.beginPath();
-        ctx.arc(cx, cy, 4, 0, 2*Math.PI);
-        ctx.fillStyle = '#ffffff';
-        ctx.fill();
-        ctx.strokeStyle = '#555';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx,cy,4,0,2*Math.PI);
+        ctx.fillStyle='#ffffff'; ctx.fill();
+        ctx.strokeStyle='#555'; ctx.lineWidth=1.5; ctx.stroke();
 
-        // Vertex labels
-        ctx.fillStyle = triColor;
-        ctx.font = 'bold 10px sans-serif';
-        ctx.fillText('a', sx(v1x) - 14, sy(v1y) + 4);
-        ctx.fillText('d', sx(v2x) + 5, sy(v2y) + 4);
-        ctx.fillText('peak', sx(v3x) - 10, sy(v3y) - 8);
+        // Labels
+        ctx.fillStyle=triColor; ctx.font='bold 10px sans-serif';
+        ctx.fillText('a',  sx(v1x)-14, sy(v1y)+4);
+        ctx.fillText('d',  sx(v2x)+5,  sy(v2y)+4);
+        ctx.fillText('peak', sx(v3x)-10, sy(v3y)-8);
 
-        // Side labels
-        ctx.font = '10px sans-serif';
-        ctx.fillText(`c = ${fmt(c)}`, sx((v1x+v2x)/2) - 18, sy((v1y+v2y)/2) + 14);
-        ctx.fillText(`b = ${fmt(b)}`, sx((v1x+v3x)/2) - 30, sy((v1y+v3y)/2));
-        ctx.fillText(`d = ${fmt(d)}`, sx((v2x+v3x)/2) + 4, sy((v2y+v3y)/2));
+        ctx.font='10px sans-serif';
+        ctx.fillText(`c = ${fmt(c)}`, sx((v1x+v2x)/2)-18, sy((v1y+v2y)/2)+14);
+        ctx.fillText(`b = ${fmt(b)}`, sx((v1x+v3x)/2)-30, sy((v1y+v3y)/2));
+        ctx.fillText(`d = ${fmt(d)}`, sx((v2x+v3x)/2)+4,  sy((v2y+v3y)/2));
     }
 </script>
 
