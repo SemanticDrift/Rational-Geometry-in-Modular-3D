@@ -60,7 +60,7 @@ By utilizing this math, the shape maintains zero-drift precision across the enti
 * `README.md` (this file)
 * `SSP Modular.pdf` (full technical paper in English)
 * `SSP Base Simétrica.pdf` (technical paper in Spanish)
-* `index.html` (core implementation code for the Symmetric Geometric Matrix)
+* `index.html` (core implementation code for the Geometric Matrix Logic Engine)
 * `Live Demo` — [Geometric Matrix Interface](https://semanticdrift.github.io/Rational-Geometry-in-Modular-3D/)
 
 ---
