@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SSP LOGIC ENGINE</title>
+    <title>SYMMETRIC GEOMETRIC MATRIX</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -22,6 +22,8 @@
             padding: 20px;
             background: #d4d4d4;
             position: relative;
+            min-height: 100vh;
+            overflow-y: auto;
         }
         #right-pane {
             flex: 1;
@@ -33,7 +35,7 @@
             overflow-y: auto;
         }
         h1 {
-            font-size: 14px;
+            font-size: 13px;
             letter-spacing: 2px;
             color: #111;
             margin-bottom: 12px;
@@ -44,37 +46,42 @@
             background: #111;
             max-width: 100%;
         }
+        /* All display rows locked height — no jumping ever */
         .delta-display {
-            margin-top: 14px;
+            margin-top: 12px;
             font-size: 20px;
             font-weight: bold;
             color: #111;
             text-align: center;
             letter-spacing: 1px;
-            min-height: 28px;
+            height: 28px;
+            line-height: 28px;
+            overflow: hidden;
         }
         .triangle-name {
             text-align: center;
             font-size: 14px;
             font-weight: bold;
-            margin-top: 5px;
+            margin-top: 4px;
             letter-spacing: 2px;
-            min-height: 20px;
+            height: 20px;
+            line-height: 20px;
+            overflow: hidden;
+        }
+        .derived-row {
+            margin-top: 6px;
+            font-size: 11px;
+            color: #555;
+            text-align: center;
+            height: 16px;
+            line-height: 16px;
+            overflow: hidden;
+            white-space: nowrap;
         }
         .green  { color: #1a7a1a; }
         .orange { color: #bb5500; }
         .blue   { color: #1144bb; }
         .red    { color: #cc0000; }
-
-        .derived-row {
-            margin-top: 10px;
-            font-size: 11px;
-            color: #555;
-            text-align: center;
-            min-height: 16px;
-            letter-spacing: 0.5px;
-        }
-
         h2 {
             font-size: 12px;
             letter-spacing: 2px;
@@ -100,7 +107,6 @@
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button { -webkit-appearance: none; }
         input:focus { outline: none; border-color: #888; }
-
         .logic-key {
             margin-top: 14px;
             border-top: 1px solid #aaa;
@@ -116,29 +122,6 @@
             color: #333;
             margin-bottom: 4px;
         }
-        .cycle-legend {
-            margin-top: 12px;
-            border-top: 1px solid #aaa;
-            padding-top: 10px;
-            font-size: 11px;
-            color: #444;
-            line-height: 2;
-        }
-        .cycle-legend .key-title {
-            font-size: 11px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            color: #333;
-            margin-bottom: 4px;
-        }
-        .swatch {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 2px;
-            margin-right: 4px;
-            vertical-align: middle;
-        }
         .watermark {
             position: absolute;
             bottom: 12px;
@@ -152,11 +135,9 @@
 <body>
 
 <div id="left-pane">
-    <h1>SSP LOGIC ENGINE</h1>
-    <canvas id="sspCanvas" width="520" height="480"></canvas>
-    <div class="delta-display">
-        &Delta; = <span id="deltaVal"></span>
-    </div>
+    <h1>SYMMETRIC GEOMETRIC MATRIX</h1>
+    <canvas id="sspCanvas" width="520" height="460"></canvas>
+    <div class="delta-display">&Delta; = <span id="deltaVal"></span></div>
     <div class="triangle-name" id="typeName"></div>
     <div class="derived-row" id="derivedRow"></div>
     <div class="watermark">SemanticShift.net</div>
@@ -183,15 +164,8 @@
         a = b - (c / 2)<br>
         b = (a + d) / 2<br>
         c = d - a<br>
-        d = b + (c / 2)
-    </div>
-
-    <div class="cycle-legend">
-        <div class="key-title">Cycle</div>
-        <span class="swatch" style="background:#cc2200"></span>Triangle (pinned circle)<br>
-        <span class="swatch" style="background:#1155cc;border-radius:50%"></span>Circle (22/7 rational)<br>
-        <span class="swatch" style="background:#888;border:none"></span>Square (bounding box)<br>
-        <span class="swatch" style="background:#fff;border:1px solid #999"></span>Source Point S
+        d = b + (c / 2)<br>
+        &Delta; = b&sup2; + c&sup2; &minus; d&sup2;
     </div>
 </div>
 
@@ -219,16 +193,19 @@
         document.getElementById('deltaVal').innerHTML = '<span class="red">ERROR</span>';
         document.getElementById('typeName').innerText = '';
         document.getElementById('derivedRow').innerText = '';
+        clearCanvas();
+    }
+
+    function clearCanvas() {
         const ctx = document.getElementById('sspCanvas').getContext('2d');
-        ctx.clearRect(0, 0, 520, 480);
+        ctx.clearRect(0, 0, 520, 460);
     }
 
     function clearDisplay() {
         document.getElementById('deltaVal').innerText = '';
         document.getElementById('typeName').innerText = '';
         document.getElementById('derivedRow').innerText = '';
-        const ctx = document.getElementById('sspCanvas').getContext('2d');
-        ctx.clearRect(0, 0, 520, 480);
+        clearCanvas();
     }
 
     function isValid(a, b, c, d) {
@@ -245,22 +222,22 @@
         if (filled < 2) { clearDisplay(); return; }
 
         if (a !== null && d !== null) {
-            b = (a + d) / 2; c = d - a;
+            b = (a+d)/2; c = d-a;
             setDerived('input_b', b); setDerived('input_c', c);
         } else if (b !== null && c !== null) {
-            a = b - c/2; d = b + c/2;
+            a = b-c/2; d = b+c/2;
             setDerived('input_a', a); setDerived('input_d', d);
         } else if (a !== null && b !== null) {
-            d = 2*b - a; c = d - a;
+            d = 2*b-a; c = d-a;
             setDerived('input_d', d); setDerived('input_c', c);
         } else if (a !== null && c !== null) {
-            d = a + c; b = (a + d)/2;
+            d = a+c; b = (a+d)/2;
             setDerived('input_d', d); setDerived('input_b', b);
         } else if (c !== null && d !== null) {
-            a = d - c; b = (a + d)/2;
+            a = d-c; b = (a+d)/2;
             setDerived('input_a', a); setDerived('input_b', b);
         } else if (b !== null && d !== null) {
-            a = 2*b - d; c = d - a;
+            a = 2*b-d; c = d-a;
             setDerived('input_a', a); setDerived('input_c', c);
         } else { clearDisplay(); return; }
 
@@ -270,24 +247,18 @@
         const isLocked = Math.abs(delta) < 0.001;
         const isObtuse = delta < -0.001;
 
-        // --- Circumcenter and radius ---
         const xPeak = (b*b + c*c - d*d) / (2*c);
         const yPeakSq = b*b - xPeak*xPeak;
         if (yPeakSq < 0) { showError(); return; }
         const yPeak = Math.sqrt(yPeakSq);
-        const yc = yPeak > 0 ? (b*b - xPeak*c) / (2*yPeak) : 0;
-        const R = Math.sqrt((c/2)*(c/2) + yc*yc);
-        const circ = (22/7) * 2 * R;
-        const squareSide = 2 * R;
+        const Yc = yPeak > 0 ? (b*b - xPeak*c) / (2*yPeak) : 0;
+        const R = Math.sqrt((c/2)*(c/2) + Yc*Yc);
+        const C = (22/7) * 2 * R;
 
-        // Update display
-        const deltaEl = document.getElementById('deltaVal');
+        document.getElementById('deltaVal').innerText = fmt(delta);
+
         const typeEl = document.getElementById('typeName');
-        const derivedEl = document.getElementById('derivedRow');
-
-        deltaEl.innerText = fmt(delta);
         typeEl.className = 'triangle-name';
-
         if (isLocked) {
             typeEl.innerText = 'RECTANGULO';
             typeEl.classList.add('green');
@@ -299,12 +270,13 @@
             typeEl.classList.add('blue');
         }
 
-        derivedEl.innerText = `R = ${fmt(R)}   C = (22/7)·2R = ${fmt(circ)}   D = ${fmt(squareSide)}`;
+        document.getElementById('derivedRow').innerText =
+            `R = ${fmt(R)}   C = ${fmt(C)}   D = ${fmt(2*R)}`;
 
-        drawFull(b, c, d, delta, isLocked, isObtuse, xPeak, yPeak, yc, R);
+        drawFull(b, c, d, isLocked, isObtuse, xPeak, yPeak, Yc, R);
     }
 
-    function drawFull(b, c, d, delta, isLocked, isObtuse, xPeak, yPeak, yc, R) {
+    function drawFull(b, c, d, isLocked, isObtuse, xPeak, yPeak, Yc, R) {
         const canvas = document.getElementById('sspCanvas');
         const ctx = canvas.getContext('2d');
         const W = canvas.width;
@@ -313,50 +285,43 @@
 
         const triColor = isLocked ? '#1a7a1a' : isObtuse ? '#bb5500' : '#1144bb';
 
-        // Scale: fit square (2R x 2R) in canvas with margin
-        const margin = 55;
+        const margin = 50;
         const available = Math.min(W, H) - margin * 2;
         const scale = available / (2 * R);
 
-        // Center of canvas = circumcenter S
         const cx = W / 2;
-        const cy = H / 2 + R * scale * 0.1; // slight offset down for labels
+        const cy = H / 2 + R * scale * 0.05;
 
         function sx(x) { return cx + x * scale; }
         function sy(y) { return cy - y * scale; }
 
-        // --- 1. BOUNDING SQUARE (gray dashed) ---
+        // Bounding square (dashed grey)
         ctx.strokeStyle = '#777';
         ctx.lineWidth = 1.5;
         ctx.setLineDash([5, 4]);
         ctx.strokeRect(sx(-R), sy(R), 2*R*scale, 2*R*scale);
         ctx.setLineDash([]);
-
-        // Square label
         ctx.fillStyle = '#888';
         ctx.font = '10px sans-serif';
-        ctx.fillText(`D = ${fmt(2*R)}`, sx(-R) + 3, sy(R) + 13);
+        ctx.fillText(`D = ${fmt(2*R)}`, sx(-R) + 4, sy(R) + 13);
 
-        // --- 2. CIRCLE (blue) ---
+        // Circle (blue)
         ctx.beginPath();
         ctx.arc(cx, cy, R * scale, 0, 2 * Math.PI);
         ctx.strokeStyle = '#1155cc';
         ctx.lineWidth = 1.8;
         ctx.stroke();
-
-        // Circle label
         ctx.fillStyle = '#1155cc';
         ctx.font = '10px sans-serif';
-        const circLabel = `C = (22/7)·${fmt(2*R)} = ${fmt((22/7)*2*R)}`;
-        ctx.fillText(circLabel, cx - ctx.measureText(circLabel).width/2, sy(-R) + 14);
+        const cLabel = `C = ${fmt((22/7)*2*R)}`;
+        ctx.fillText(cLabel, cx - ctx.measureText(cLabel).width/2, sy(-R) + 14);
 
-        // --- 3. TRIANGLE (vertices relative to circumcenter S at origin) ---
-        // Circumcenter at origin, vertices:
-        const v1x = -c/2;     const v1y = -yc;
-        const v2x = c/2;      const v2y = -yc;
-        const v3x = xPeak - c/2; const v3y = yPeak - yc;
+        // Triangle vertices relative to circumcenter S at origin
+        const v1x = -c/2;        const v1y = -Yc;
+        const v2x =  c/2;        const v2y = -Yc;
+        const v3x = xPeak - c/2; const v3y = yPeak - Yc;
 
-        // Fill
+        // Triangle fill
         ctx.beginPath();
         ctx.moveTo(sx(v1x), sy(v1y));
         ctx.lineTo(sx(v2x), sy(v2y));
@@ -365,7 +330,7 @@
         ctx.fillStyle = triColor + '30';
         ctx.fill();
 
-        // Stroke
+        // Triangle stroke
         ctx.beginPath();
         ctx.moveTo(sx(v1x), sy(v1y));
         ctx.lineTo(sx(v2x), sy(v2y));
@@ -375,7 +340,7 @@
         ctx.lineWidth = 2.5;
         ctx.stroke();
 
-        // Radius lines (faint dotted)
+        // Radius lines (faint dotted from S to each vertex)
         ctx.setLineDash([3, 4]);
         ctx.strokeStyle = '#555';
         ctx.lineWidth = 1;
@@ -387,14 +352,12 @@
         });
         ctx.setLineDash([]);
 
-        // Right angle marker (for locked triangle, at base left vertex)
+        // Right angle marker for locked triangle at left base vertex
         if (isLocked) {
             const sz = 10;
-            // Find direction from v1 to v2 (base direction)
-            const baseDir = [v2x - v1x, v2y - v1y];
+            const baseDir = [v2x-v1x, v2y-v1y];
             const basLen = Math.sqrt(baseDir[0]**2 + baseDir[1]**2);
             const ub = [baseDir[0]/basLen, baseDir[1]/basLen];
-            // Perpendicular (upward)
             const up = [-ub[1], ub[0]];
             const bx = sx(v1x), by = sy(v1y);
             const p1 = [bx + ub[0]*sz, by - ub[1]*sz];
@@ -409,41 +372,27 @@
             ctx.stroke();
         }
 
-        // --- 4. SOURCE POINT S (circumcenter at canvas center) ---
+        // Source point S
         ctx.beginPath();
-        ctx.arc(cx, cy, 5, 0, 2*Math.PI);
+        ctx.arc(cx, cy, 4, 0, 2*Math.PI);
         ctx.fillStyle = '#ffffff';
         ctx.fill();
-        ctx.strokeStyle = '#333';
+        ctx.strokeStyle = '#555';
         ctx.lineWidth = 1.5;
         ctx.stroke();
-        ctx.fillStyle = '#ccc';
-        ctx.font = '10px sans-serif';
-        ctx.fillText('S', cx + 7, cy - 6);
 
-        // --- 5. VERTEX LABELS ---
+        // Vertex labels
         ctx.fillStyle = triColor;
         ctx.font = 'bold 10px sans-serif';
-        ctx.fillText('a', sx(v1x) - 16, sy(v1y) + 4);
-        ctx.fillText('d', sx(v2x) + 6, sy(v2y) + 4);
+        ctx.fillText('a', sx(v1x) - 14, sy(v1y) + 4);
+        ctx.fillText('d', sx(v2x) + 5, sy(v2y) + 4);
         ctx.fillText('peak', sx(v3x) - 10, sy(v3y) - 8);
 
         // Side labels
         ctx.font = '10px sans-serif';
-        ctx.fillText(`c=${fmt(c)}`, sx((v1x+v2x)/2) - 14, sy((v1y+v2y)/2) + 14);
-        ctx.fillText(`b=${fmt(b)}`, sx((v1x+v3x)/2) - 28, sy((v1y+v3y)/2));
-        ctx.fillText(`d=${fmt(d)}`, sx((v2x+v3x)/2) + 4, sy((v2y+v3y)/2));
-
-        // --- 6. MATRIX INFO (top left) ---
-        const a_val = b - c/2;
-        ctx.fillStyle = 'rgba(30,30,30,0.75)';
-        ctx.fillRect(8, 8, 148, 72);
-        ctx.fillStyle = '#ddd';
-        ctx.font = '10px monospace';
-        ctx.fillText(`a=${fmt(a_val)}  d=${fmt(d)}`, 14, 24);
-        ctx.fillText(`b=${fmt(b)}  c=${fmt(c)}`, 14, 38);
-        ctx.fillText(`R = ${fmt(R)}`, 14, 52);
-        ctx.fillText(`\u0394 = ${fmt(delta)}`, 14, 66);
+        ctx.fillText(`c = ${fmt(c)}`, sx((v1x+v2x)/2) - 18, sy((v1y+v2y)/2) + 14);
+        ctx.fillText(`b = ${fmt(b)}`, sx((v1x+v3x)/2) - 30, sy((v1y+v3y)/2));
+        ctx.fillText(`d = ${fmt(d)}`, sx((v2x+v3x)/2) + 4, sy((v2y+v3y)/2));
     }
 </script>
 
