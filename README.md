@@ -35,11 +35,12 @@ For any coordinate in the modular field, structural integrity is maintained thro
 
 The system operates under the following structural constraints:
 
-* **Anchor:** a = b - (c / 2)
-* **Centroid:** b = (a + d) / 2
-* **Span:** c = d - a
-* **Boundary:** d = b + (c / 2)
-
+```
+a = b - (c / 2)
+b = (a + d) / 2
+c = d - a
+d = b + (c / 2)
+```
 ---
 
 ## The Delta (Δ)
