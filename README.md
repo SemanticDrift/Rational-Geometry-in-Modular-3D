@@ -79,7 +79,7 @@ The Geometric Matrix provides a rigorous model for field-based geometry:
 
 ```
 Johnson, C. (2026). Geometric Matrix: Structural Foundations for Rational Geometry in Modular 3D.
-SemanticDrift. DOI: https://doi.org/10.5281/zenodo.19490969
+SemanticDrift. DOI: [https://doi.org/10.5281/zenodo.19490969]
 License: CC BY 4.0
 ```
 
