@@ -81,8 +81,8 @@ No trigonometry required. No Heron's formula. One square root at the end.
 | File | Description |
 |------|-------------|
 | `README.md` | This file |
-| `SSP_Modular_EN_CJ_April2026.pdf` | Full technical paper (English) |
-| `SSP_Modular_ES_CJ_April2026.pdf` | Full technical paper (Spanish) |
+| `SSP Modular.pdf` | Full technical paper (English) |
+| `Base Simétrica.pdf` | Full technical paper (Spanish) |
 | `index.html` | Geometric Engine — live interactive tool |
 
 **Live Demo:** https://semanticdrift.github.io/Rational-Geometry-in-Modular-3D/
