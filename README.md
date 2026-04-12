@@ -1,95 +1,118 @@
-# Geometric Matrix
-### Structural Foundations for Rational Geometry in Modular 3D
-**Author:** Carolina Johnson (CJ)  
-**Date:** April 2026  
-**License:** CC BY 4.0, Attribution required  
-**DOI:** https://doi.org/10.5281/zenodo.19490969  
+# Geometric Engine
+**Rational Geometry for Modular 3D Construction**
+
+**Series:** Mathematical Foundations for Universal Systems
+**Author:** Carolina Johnson (CJ) — **Date:** April 2026
+**License:** CC BY 4.0, Attribution required
+**DOI:** https://doi.org/10.5281/zenodo.19490969
 **ORCID:** https://orcid.org/0009-0002-8819-3347
 
 ---
 
-## What This Is
+## What This Does
 
-The Geometric Matrix identifies the structural foundations required to stabilize 3D modular environments without the cumulative error of traditional Euclidean approximations. It replaces fragmented mathematical silos, such as Trigonometry, Heron's Formula, and the Pythagorean Theorem, with a single resonant field logic. 
-
-This framework is built for computer scientists and engineers working in high precision 3D animation, gaming, and modular construction. It provides a unified approach where geometry is an emergent property of the grid itself rather than an external asset. 
+Replaces three separate mathematical frameworks (Trigonometry, Heron's Formula, and the Pythagorean Theorem) with a single coordinate matrix. One set of arithmetic derives any triangle, its circumscribed circle, and its bounding square from a boundary span. No forced right-angle dependencies. No post-hoc correction. No floating-point drift introduced at the source.
 
 ---
 
 ## The Problem It Solves
 
-Modern 3D pipelines are weighed down by structural drag. Standard software treats every shape as a stranger to the grid, requiring constant post-hoc correction to manage floating point drift and collision lag. Current engines must often slice non-right triangles into right-angled components to satisfy coordinate projection math. 
+Standard 3D pipelines treat every shape as an independent object requiring separate formulas. Non-right triangles are sliced into right-angled components to satisfy coordinate projection math. Each operation accumulates rounding error.
 
-The Geometric Matrix eliminates this drag. It allows the grid to hold any geometric form, including spheres, triangles, and squares, in its native state without forced right-angle dependencies or rounding errors. 
+The Geometric Engine eliminates this by deriving all three figures from the same four-variable matrix. The triangle, the circle, and the square are not separate primitives. They are states of the same system.
 
 ---
 
-## The Logic Key
+## The Protocol
 
-For any coordinate in the modular field, structural integrity is maintained through the Symmetric Span Protocol (SSP). The matrix utilizes four core variables to define a span:
-
-* **a (Anchor):** The starting boundary of the span.
-* **b (Centroid):** The geometric center and point of resonance.
-* **c (Span):** The total magnitude or distance of the structure.
-* **d (Boundary):** The terminal boundary of the span.
-
-The system operates under the following structural constraints:
+For any anchor boundary [a, d] with a < d:
 
 ```
-a = b - (c / 2)
-b = (a + d) / 2
-c = d - a
-d = b + (c / 2)
+a = b - (c / 2)      — Anchor: boundary start
+b = (a + d) / 2      — Centroid: arithmetic midpoint
+c = d - a            — Span: displacement between anchors
+d = b + (c / 2)      — Boundary: boundary end
 ```
+
+Any two variables determine the other two. The system is closed by arithmetic.
+
 ---
 
-## The Delta (Δ)
-
-The fundamental state of the Geometric Matrix is determined by the Delta (Δ). This ensures that the square can hold a sphere that can hold a triangle in any form it desires.
+## The Delta Constant
 
 ```
 Δ = b² + c² - d²
+  = (5a - d)(a - d) / 4
 ```
 
-At Δ = 0, the triangle is right (equilibrium).
-At Δ > 0, the triangle is acute.
-At Δ < 0, the triangle is obtuse.
+| Condition | Δ | Triangle |
+|-----------|---|----------|
+| d = 5a | 0 | Right (equilibrium) |
+| d < 5a | < 0 | Obtuse |
+| d > 5a | > 0 | Acute |
+
+---
+
+## The Full Cycle
+
+From the same matrix:
+
+```
+SSP Matrix  =>  Triangle  =>  Circumcircle  =>  Bounding Square
+```
+
+**Circumcenter via rational partitioning:**
+```
+x  = (b² + c² - d²) / (2c)
+y  = √(b² - x²)
+Xc = c / 2
+Yc = (b² - xc) / (2y)
+R  = √((c/2)² + Yc²)
+C  = (22/7) · 2R
+D  = 2R
+```
+
+No trigonometry required. No Heron's formula. One square root at the end.
 
 ---
 
 ## Repository Contents
 
-* `README.md` (this file)
-* `SSP Modular.pdf` (full technical paper in English)
-* `SSP Base Simétrica.pdf` (technical paper in Spanish)
-* `index.html` (core implementation code for the Geometric Matrix Logic Engine)
-* `Live Demo` — [Geometric Matrix Interface](https://semanticdrift.github.io/Rational-Geometry-in-Modular-3D/)
+| File | Description |
+|------|-------------|
+| `README.md` | This file |
+| `SSP_Modular_EN_CJ_April2026.pdf` | Full technical paper (English) |
+| `SSP_Modular_ES_CJ_April2026.pdf` | Full technical paper (Spanish) |
+| `index.html` | Geometric Engine — live interactive tool |
 
----
-
-## Technical Specifications for Engineers
-
-The Geometric Matrix provides a rigorous model for field-based geometry:
-
-1. **Unified Geometric Frame:** Eliminates the computational cost of solving multiple mathematical sets for a single surface.
-2. **Modular Capacity:** The grid provides nested potential, allowing any triangle to exist without being forced into right-angle approximations.
-3. **Zero-Drift Sync:** The symmetry of the centroid ensures that any expansion remains locked to the anchor and boundary, preventing floating-point drift in large-scale environments.
+**Live Demo:** https://semanticdrift.github.io/Rational-Geometry-in-Modular-3D/
 
 ---
 
 ## Citation
 
+```
+Johnson, C. (2026). Geometric Engine: Rational Geometry for Modular 3D Construction.
+Series: Mathematical Foundations for Universal Systems.
+SemanticDrift. DOI: https://doi.org/10.5281/zenodo.19490969
+```
 
-```
-Johnson, C. (2026). Geometric Matrix: Structural Foundations for Rational Geometry in Modular 3D.
-SemanticDrift. DOI: https://doi.org/10.5281/zenodo.19490969 
-License: CC BY 4.0
-```
+---
+
+## Dependencies
+
+| Framework | DOI |
+|-----------|-----|
+| SSP: Completing the Pythagorean Theorem | https://doi.org/10.5281/zenodo.19447063 |
+| Law of Admissibility (R = 4) | https://doi.org/10.5281/zenodo.18993233 |
+| The origami Principle | https://doi.org/10.5281/zenodo.18293884 |
+
+Full publication list: https://www.semanticshift.net
 
 ---
 
 ## License
 
-© 2026 Carolina Johnson (CJ)  
-Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0)  
+© 2026 Carolina Johnson (CJ)
+Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0)
 Attribution required. https://creativecommons.org/licenses/by/4.0/
