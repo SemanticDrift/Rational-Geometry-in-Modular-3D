@@ -136,5 +136,4 @@ Johnson, C. (2026). Spatial Extension of the Geometric Matrix: Rational Foundati
 
 License
 © 2026 Carolina Johnson (CJ)
-Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0). Attribution required.[Module 3D Matrix.pdf](https://github.com/user-attachments/files/31058022/Module.3D.Matrix.pdf)
-[Module 3D Matrix.pdf](https://github.com/user-attachments/files/31058020/Module.3D.Matrix.pdf)
+Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0). Attribution required.
